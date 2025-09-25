@@ -129,6 +129,13 @@ public class GameFrame extends JFrame {
         boardPanel.repaint();
     }
 
+    public void updateBoardAndKeepSelection(int startRow, int startCol, int endRow, int endCol) {
+        board.performMove(startRow, startCol, endRow, endCol);
+        this.selectedRow = endRow; // Atualiza a seleção para a nova posição
+        this.selectedCol = endCol;
+        boardPanel.repaint();
+    }
+
     private void sendChat(ActionEvent e) {
         String message = chatInput.getText().trim();
         if (!message.isEmpty()) {

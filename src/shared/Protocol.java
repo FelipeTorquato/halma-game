@@ -15,6 +15,7 @@ public class Protocol {
     public static final String GAME_START = "GAME_START";
     public static final String OPPONENT_FOUND = "OPPONENT_FOUND";
     public static final String VALID_MOVE = "VALID_MOVE";
+    public static final String JUMP_MOVE = "JUMP_MOVE";
     public static final String OPPONENT_MOVED = "OPPONENT_MOVED";
     public static final String SET_TURN = "SET_TURN";
     public static final String CHAT_MESSAGE = "CHAT_MESSAGE";

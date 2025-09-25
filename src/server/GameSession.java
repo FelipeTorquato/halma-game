@@ -114,24 +114,33 @@ public class GameSession implements Runnable {
 
             if (board.movePiece(startRow, startCol, endRow, endCol, currentPlayer)) {
                 if (senderId == 1) player1MoveCount++; else player2MoveCount++;
-                String moveMessage = Protocol.VALID_MOVE + Protocol.SEPARATOR + moveData;
+//                String moveMessage = Protocol.VALID_MOVE + Protocol.SEPARATOR + moveData;
 
                 boolean wasJump = Math.abs(startRow - endRow) > 1 || Math.abs(startCol - endCol) > 1;
 
-                sender.sendMessage(moveMessage);
+//                sender.sendMessage(moveMessage);
 
                 ClientHandler opponent = (sender == player1) ? player2 : player1;
-                opponent.sendMessage(Protocol.OPPONENT_MOVED + Protocol.SEPARATOR + moveData);
+//                opponent.sendMessage(Protocol.OPPONENT_MOVED + Protocol.SEPARATOR + moveData);
 
                 if (wasJump && board.canJumpFrom(endRow, endCol)) {
                     isChainJumpActive = true;
                     chainJumpRow = endRow;
                     chainJumpCol = endCol;
+
+                    String jumpMessage = Protocol.JUMP_MOVE + Protocol.SEPARATOR + moveData;
+                    sender.sendMessage(jumpMessage);
+                    opponent.sendMessage(Protocol.OPPONENT_MOVED + Protocol.SEPARATOR + moveData);
+
+
                     // Informa o jogador e aguarda a sua decisão
                     sender.sendMessage(Protocol.CHAIN_JUMP_OFFER + Protocol.SEPARATOR + endRow + Protocol.SEPARATOR + endCol);
                 } else {
                     isChainJumpActive = false;
-                    sender.sendMessage(Protocol.VALID_MOVE + Protocol.SEPARATOR + moveData);
+
+                    String moveMessage = Protocol.VALID_MOVE + Protocol.SEPARATOR + moveData;
+                    sender.sendMessage(moveMessage);
+                    opponent.sendMessage(Protocol.OPPONENT_MOVED + Protocol.SEPARATOR + moveData);
 
                     if (board.checkForWinner(currentPlayer)) {
                         opponent = (sender == player1) ? player2 : player1;

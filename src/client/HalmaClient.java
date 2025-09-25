@@ -120,6 +120,14 @@ public class HalmaClient {
                         int endCol = Integer.parseInt(coords[3]);
                         gameFrame.updateBoard(startRow, startCol, endRow, endCol);
                         break;
+                    case Protocol.JUMP_MOVE:
+                        String[] jumpCoords = parts[1].split(Protocol.SEPARATOR);
+                        int jumpStartRow = Integer.parseInt(jumpCoords[0]);
+                        int jumpStartCol = Integer.parseInt(jumpCoords[1]);
+                        int jumpEndRow = Integer.parseInt(jumpCoords[2]);
+                        int jumpEndCol = Integer.parseInt(jumpCoords[3]);
+                        gameFrame.updateBoardAndKeepSelection(jumpStartRow, jumpStartCol, jumpEndRow, jumpEndCol);
+                        break;
                     case Protocol.CHAT_MESSAGE:
                         gameFrame.addChatMessage(parts[1]);
                         break;
