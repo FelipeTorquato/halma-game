@@ -78,7 +78,8 @@ public class GameSession implements Runnable {
                     handleMove(parts[1], sender);
                 } else {
                     sender.sendMessage(Protocol.ERROR + Protocol.SEPARATOR + "Não é o seu turno.");
-                    if (senderId == 1) player1InvalidAttempts++; else player2InvalidAttempts++;
+                    if (senderId == 1) player1InvalidAttempts++;
+                    else player2InvalidAttempts++;
                 }
                 break;
             case Protocol.CHAT:
@@ -112,8 +113,9 @@ public class GameSession implements Runnable {
                 }
             }
 
-            if (board.movePiece(startRow, startCol, endRow, endCol, currentPlayer)) {
-                if (senderId == 1) player1MoveCount++; else player2MoveCount++;
+            if (board.movePiece(startRow, startCol, endRow, endCol, currentPlayer, isChainJumpActive)) {
+                if (senderId == 1) player1MoveCount++;
+                else player2MoveCount++;
 //                String moveMessage = Protocol.VALID_MOVE + Protocol.SEPARATOR + moveData;
 
                 boolean wasJump = Math.abs(startRow - endRow) > 1 || Math.abs(startCol - endCol) > 1;
@@ -128,13 +130,12 @@ public class GameSession implements Runnable {
                     chainJumpRow = endRow;
                     chainJumpCol = endCol;
 
-                    String jumpMessage = Protocol.JUMP_MOVE + Protocol.SEPARATOR + moveData;
-                    sender.sendMessage(jumpMessage);
-                    opponent.sendMessage(Protocol.OPPONENT_MOVED + Protocol.SEPARATOR + moveData);
-
+//                    String jumpMessage = Protocol.JUMP_MOVE + Protocol.SEPARATOR + moveData;
+//                    sender.sendMessage(jumpMessage);
 
                     // Informa o jogador e aguarda a sua decisão
                     sender.sendMessage(Protocol.CHAIN_JUMP_OFFER + Protocol.SEPARATOR + endRow + Protocol.SEPARATOR + endCol);
+                    opponent.sendMessage(Protocol.OPPONENT_MOVED + Protocol.SEPARATOR + moveData);
                 } else {
                     isChainJumpActive = false;
 
@@ -157,7 +158,8 @@ public class GameSession implements Runnable {
 
                 }
             } else {
-                if (senderId == 1) player1InvalidAttempts++; else player2InvalidAttempts++;
+                if (senderId == 1) player1InvalidAttempts++;
+                else player2InvalidAttempts++;
                 sender.sendMessage(Protocol.ERROR + Protocol.SEPARATOR + "Movimento inválido.");
             }
         } catch (Exception e) {

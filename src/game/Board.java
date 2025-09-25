@@ -77,8 +77,17 @@ public class Board {
      * @return Retorna se é válido o movimento da peça e altera a posição da peça.
      */
     public boolean movePiece(int startRow, int startCol, int endRow, int endCol, int player) {
+        return movePiece(startRow, startCol, endRow, endCol, player, false) ;
+    }
+
+    /**
+     * Metodo sobrecarregado para validar apenas pulos.
+     * @param jumpOnly Se verdadeiro, apenas movimentos de pulo são permitidos.
+     * @return Retorna se é válido o movimento da peça e altera a posição da peça.
+     */
+    public boolean movePiece(int startRow, int startCol, int endRow, int endCol, int player, boolean jumpOnly) {
         // Valida o movimento
-        if (!isValidMove(startRow, startCol, endRow, endCol, player)) {
+        if (!isValidMove(startRow, startCol, endRow, endCol, player, jumpOnly)) {
             return false;
         }
         Piece piece = grid[startRow][startCol];
@@ -88,7 +97,7 @@ public class Board {
     }
 
     // Verifica se o movimento enviado é válido
-    private boolean isValidMove(int startRow, int startCol, int endRow, int endCol, int player) {
+    private boolean isValidMove(int startRow, int startCol, int endRow, int endCol, int player, boolean jumpOnly) {
         // Validaçao básica
         if (!isValidCoordinate(startRow, startCol) || !isValidCoordinate(endRow, endCol)) {
             return false;
@@ -106,16 +115,21 @@ public class Board {
         // Verifica se há movimento adjacente
         int rowDiff = Math.abs(startRow - endRow);
         int colDiff = Math.abs(startCol - endCol);
-        if (rowDiff <= 1 && colDiff <= 1) {
-            return true; // Valida movimento adjacente
-        }
+        boolean isJump = (rowDiff == 2 && colDiff == 0) || (rowDiff == 0 && colDiff == 2) || (rowDiff == 2 && colDiff == 2);
 
-        // Verifica movimento de pulo
-        if ((rowDiff == 2 && colDiff == 0) || (rowDiff == 0 && colDiff == 2) || (rowDiff == 2 && colDiff == 2)) {
+        if (isJump) {
             int jumpedRow = startRow + (endRow - startRow) / 2;
             int jumpedCol = startCol + (endCol - startCol) / 2;
-            // Deve haver uma peça para pular por cima
+            // Um pulo é válido se houver uma peça para pular por cima.
             return grid[jumpedRow][jumpedCol] != null;
+        }
+
+        if (jumpOnly) {
+            return false;
+        }
+
+        if (rowDiff <= 1 && colDiff <= 1) {
+            return true; // Valida movimento adjacente
         }
 
         return false; // Invalid move
