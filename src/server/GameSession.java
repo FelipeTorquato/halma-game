@@ -130,12 +130,13 @@ public class GameSession implements Runnable {
                     chainJumpRow = endRow;
                     chainJumpCol = endCol;
 
-//                    String jumpMessage = Protocol.JUMP_MOVE + Protocol.SEPARATOR + moveData;
-//                    sender.sendMessage(jumpMessage);
+                    String jumpMessage = Protocol.JUMP_MOVE + Protocol.SEPARATOR + moveData;
+                    sender.sendMessage(jumpMessage);
+
+                    opponent.sendMessage(Protocol.OPPONENT_MOVED + Protocol.SEPARATOR + moveData);
 
                     // Informa o jogador e aguarda a sua decisão
                     sender.sendMessage(Protocol.CHAIN_JUMP_OFFER + Protocol.SEPARATOR + endRow + Protocol.SEPARATOR + endCol);
-                    opponent.sendMessage(Protocol.OPPONENT_MOVED + Protocol.SEPARATOR + moveData);
                 } else {
                     isChainJumpActive = false;
 
