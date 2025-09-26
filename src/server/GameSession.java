@@ -19,6 +19,7 @@ public class GameSession implements Runnable {
     private int player2InvalidAttempts = 0;
     private final List<String> chatHistory = new ArrayList<>();
     private String winnerInfo = "O jogo encerrou inesperadamente.";
+    private boolean gameEnded = false;
 
     private boolean isChainJumpActive = false;
     private int chainJumpRow;
@@ -145,6 +146,9 @@ public class GameSession implements Runnable {
                     opponent.sendMessage(Protocol.OPPONENT_MOVED + Protocol.SEPARATOR + moveData);
 
                     if (board.checkForWinner(currentPlayer)) {
+                        if (gameEnded) return;
+                        gameEnded = true;
+
                         opponent = (sender == player1) ? player2 : player1;
                         winnerInfo = "Jogador " + currentPlayer + " ganhou por chegar no destino!";
                         sendGameOverStats();
@@ -177,6 +181,9 @@ public class GameSession implements Runnable {
     }
 
     private void handleForfeit(ClientHandler forfeiter) {
+        if (gameEnded) return;
+        gameEnded = true;
+
         ClientHandler winner = (forfeiter == player1) ? player2 : player1;
         int winnerId = (winner == player1) ? 1 : 2;
         winnerInfo = "Jogador " + winnerId + " ganhou pela desistência do oponente.";
@@ -187,6 +194,21 @@ public class GameSession implements Runnable {
 
         winner.shutdown();
         forfeiter.shutdown();
+    }
+
+    public synchronized void handleDisconnect(ClientHandler disconnectedPlayer) {
+        if (gameEnded) return;
+        gameEnded = true;
+
+        ClientHandler winner = (disconnectedPlayer == player1) ? player2 : player1;
+        int winnerId = (winner == player1) ? 1 : 2;
+        winnerInfo = "Jogador " + winnerId + " ganhou porque o oponente se desconectou.";
+        sendGameOverStats();
+
+        winner.sendMessage(Protocol.OPPONENT_FORFEIT);
+
+        winner.shutdown();
+        disconnectedPlayer.shutdown();
     }
 
     private void sendGameOverStats() {

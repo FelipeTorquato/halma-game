@@ -37,7 +37,7 @@ public class ResultsDialog extends JDialog {
         // Painel de estatísticas
         JPanel statsPanel = new JPanel(new GridLayout(2, 2, 10, 5));
         statsPanel.add(new JLabel("Movimentos do jogador 1: " + p1Moves));
-        statsPanel.add(new JLabel("Movimentos do jogador 2" + p2Moves));
+        statsPanel.add(new JLabel("Movimentos do jogador 2: " + p2Moves));
         statsPanel.add(new JLabel("Tentativas inválidas do jogador 1: " + p1Invalid));
         statsPanel.add(new JLabel("Tentativas inválidas do jogador 2: " + p2Invalid));
         mainPanel.add(statsPanel, BorderLayout.CENTER);

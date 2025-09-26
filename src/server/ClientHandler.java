@@ -40,6 +40,9 @@ public class ClientHandler extends Thread {
             }
         } catch (IOException e) {
             System.out.println("Cliente desconectado: " + clientSocket.getInetAddress());
+            if (gameSession != null) {
+                gameSession.handleDisconnect(this);
+            }
         } finally {
             try {
                 clientSocket.close();

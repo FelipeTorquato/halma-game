@@ -146,7 +146,7 @@ public class HalmaClient {
                         showResultsAndExit();
                         break;
                     case Protocol.OPPONENT_FORFEIT:
-                        JOptionPane.showMessageDialog(gameFrame, "Seu oponente dessitiu. Você ganhou!", "Vitória", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(gameFrame, "Seu oponente desistiu. Você ganhou!", "Vitória", JOptionPane.INFORMATION_MESSAGE);
                         showResultsAndExit();
                         break;
                     case Protocol.ERROR:
