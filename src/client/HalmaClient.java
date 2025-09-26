@@ -20,47 +20,13 @@ public class HalmaClient {
         gameFrame = new GameFrame(this);
         gameFrame.setVisible(true);
 
-        // Cria um painel personalizado para a caixa de diálogo
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        String serverAddress = JOptionPane.showInputDialog(gameFrame, "Entre com o endereço IP:", "localhost");
 
-        // Campo para o endereço IP
-        JPanel ipPanel = new JPanel();
-        JTextField ipField = new JTextField("localhost", 15);
-        ipPanel.add(new JLabel("Endereço IP:"));
-        ipPanel.add(ipField);
-
-        // Campo para a porta
-        JPanel portPanel = new JPanel();
-        JTextField portField = new JTextField("12345", 15);
-        portPanel.add(new JLabel("Porta:"));
-        portPanel.add(portField);
-
-        panel.add(ipPanel);
-        panel.add(portPanel);
-
-        int result = JOptionPane.showConfirmDialog(gameFrame, panel, "Configuração do Servidor",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
-        if (result == JOptionPane.OK_OPTION) {
-            String serverAddress = ipField.getText();
-            String portStr = portField.getText();
-            if (serverAddress != null && !serverAddress.trim().isEmpty() && portStr != null && !portStr.trim().isEmpty()) {
-                try {
-                    int port = Integer.parseInt(portStr);
-                    connect(serverAddress, port);
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(gameFrame, "A porta deve ser um número válido.", "Erro de Entrada", JOptionPane.ERROR_MESSAGE);
-                    System.exit(0);
-                }
-            } else {
-                // Se o usuário deixar algum campo em branco e clicar OK
-                System.exit(0);
-            }
+        if (serverAddress != null && !serverAddress.trim().isEmpty()) {
+            connect(serverAddress, 12345);
         } else {
             System.exit(0);
         }
-
     }
 
     public void shutdown() {
@@ -83,7 +49,6 @@ public class HalmaClient {
         } catch (IOException e) {
             JOptionPane.showMessageDialog(gameFrame, "Não foi possível se conectar ao servidor.", "Erro de conexão", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
-            System.exit(1);
         }
     }
 
