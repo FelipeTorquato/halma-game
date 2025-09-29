@@ -92,7 +92,13 @@ public class GameSession implements Runnable {
             case Protocol.END_CHAIN_JUMP:
                 if (isChainJumpActive && senderId == currentPlayer) {
                     isChainJumpActive = false;
-                    switchTurn();
+                    ClientHandler opponent = (sender == player1) ? player2 : player1;
+                    if (board.checkForWinner(currentPlayer)) {
+                        winnerInfo = "Jogador " + currentPlayer + " ganhou por chegar no destino!";
+                        endGame(sender, opponent, Protocol.VICTORY, Protocol.DEFEAT);
+                    } else {
+                        switchTurn();
+                    }
                 }
                 break;
         }
@@ -209,6 +215,25 @@ public class GameSession implements Runnable {
 
         winner.shutdown();
         disconnectedPlayer.shutdown();
+    }
+
+    private void shutdownAllConnections() {
+        player1.shutdown();
+        player2.shutdown();
+    }
+
+    private void endGame(ClientHandler winner, ClientHandler loser, String winMessage, String loseMessage) {
+        if (gameEnded) return;
+        gameEnded = true;
+
+        sendGameOverStats();
+
+        winner.sendMessage(winMessage);
+        if (!loseMessage.isEmpty()) {
+            loser.sendMessage(loseMessage);
+        }
+
+        shutdownAllConnections();
     }
 
     private void sendGameOverStats() {
