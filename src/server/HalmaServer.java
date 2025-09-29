@@ -80,7 +80,7 @@ public class HalmaServer {
                 ClientHandler player2Chat = waitingChatClients.remove(0);
 
                 // Cria a sessão com as 4 conexões
-                GameSession gameSession = new GameSession(player1Game, player1Chat, player2Game, player2Chat);
+                GameSession gameSession = new GameSession(player1Game, player2Game, player1Chat, player2Chat);
                 new Thread(gameSession).start();
             }
         }
