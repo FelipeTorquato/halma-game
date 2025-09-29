@@ -12,56 +12,33 @@ public class Board {
         setupPieces();
     }
 
-//    private void setupPieces() {
-//        // Player 1 (Peças pretas no canto superior esquerdo do tabuleiro)
-//        grid[0][0] = new Piece(1);
-//        grid[0][1] = new Piece(1);
-//        grid[0][2] = new Piece(1);
-//        grid[1][0] = new Piece(1);
-//        grid[1][1] = new Piece(1);
-//        grid[1][2] = new Piece(1);
-//        grid[2][0] = new Piece(1);
-//        grid[2][1] = new Piece(1);
-//        grid[3][0] = new Piece(1);
-//
-//        // Player 2 (Peças brancas no canto inferior direito do tabuleiro)
-//        grid[SIZE - 1][SIZE - 1] = new Piece(2);
-//        grid[SIZE - 1][SIZE - 2] = new Piece(2);
-//        grid[SIZE - 1][SIZE - 3] = new Piece(2);
-//        grid[SIZE - 2][SIZE - 1] = new Piece(2);
-//        grid[SIZE - 2][SIZE - 2] = new Piece(2);
-//        grid[SIZE - 2][SIZE - 3] = new Piece(2);
-//        grid[SIZE - 3][SIZE - 1] = new Piece(2);
-//        grid[SIZE - 3][SIZE - 2] = new Piece(2);
-//        grid[SIZE - 4][SIZE - 1] = new Piece(2);
-//    }
-
     private void setupPieces() {
         // Player 1 (Peças pretas no canto superior esquerdo do tabuleiro)
-        grid[0][0] = new Piece(2);
-        grid[0][1] = new Piece(2);
-        grid[0][2] = new Piece(2);
-        grid[1][0] = new Piece(2);
-        grid[1][1] = new Piece(2);
-        grid[1][2] = new Piece(2);
-        grid[2][0] = new Piece(2);
-        grid[3][2] = new Piece(2);
-        grid[5][4] = new Piece(2);
+        grid[0][0] = new Piece(1);
+        grid[0][1] = new Piece(1);
+        grid[0][2] = new Piece(1);
+        grid[1][0] = new Piece(1);
+        grid[1][1] = new Piece(1);
+        grid[1][2] = new Piece(1);
+        grid[2][0] = new Piece(1);
+        grid[2][1] = new Piece(1);
+        grid[3][0] = new Piece(1);
 
         // Player 2 (Peças brancas no canto inferior direito do tabuleiro)
-        grid[SIZE - 1][SIZE - 1] = new Piece(1);
-        grid[SIZE - 1][SIZE - 2] = new Piece(1);
-        grid[SIZE - 1][SIZE - 3] = new Piece(1);
-        grid[SIZE - 2][SIZE - 1] = new Piece(1);
-        grid[SIZE - 2][SIZE - 2] = new Piece(1);
-        grid[2][1] = new Piece(1);
-        grid[SIZE - 3][SIZE - 1] = new Piece(1);
-        grid[SIZE - 3][SIZE - 2] = new Piece(1);
-        grid[SIZE - 5][SIZE - 1] = new Piece(1);
+        grid[SIZE - 1][SIZE - 1] = new Piece(2);
+        grid[SIZE - 1][SIZE - 2] = new Piece(2);
+        grid[SIZE - 1][SIZE - 3] = new Piece(2);
+        grid[SIZE - 2][SIZE - 1] = new Piece(2);
+        grid[SIZE - 2][SIZE - 2] = new Piece(2);
+        grid[SIZE - 2][SIZE - 3] = new Piece(2);
+        grid[SIZE - 3][SIZE - 1] = new Piece(2);
+        grid[SIZE - 3][SIZE - 2] = new Piece(2);
+        grid[SIZE - 4][SIZE - 1] = new Piece(2);
     }
 
     /**
      * Verifica se a peça selecionada está em posição válida
+     *
      * @param row A linha da peça clicada
      * @param col A coluna da peça clicada
      * @return A peça se a posição for válida, senão, retorna null
@@ -76,10 +53,11 @@ public class Board {
     /**
      * Função responsável por executar o movimento da peça no tabuleiro. Utilizada pela função de atualizar o estado do
      * tabuleiro. Primeiro valida a posição da peça clicada, e altera o estado do tabuleiro.
+     *
      * @param startRow Linha inicial
      * @param startCol Coluna inicial
-     * @param endRow Linha final
-     * @param endCol Coluna final
+     * @param endRow   Linha final
+     * @param endCol   Coluna final
      */
     public void performMove(int startRow, int startCol, int endRow, int endCol) {
         // Verificação de segurança da peça selecionada
@@ -93,19 +71,21 @@ public class Board {
 
     /**
      * Função responsável por mover a peça e atualizar o estado dela.
+     *
      * @param startRow Linha inicial
      * @param startCol Coluna inicial
-     * @param endRow Linha final
-     * @param endCol Coluna final
+     * @param endRow   Linha final
+     * @param endCol   Coluna final
      * @param player
      * @return Retorna se é válido o movimento da peça e altera a posição da peça.
      */
     public boolean movePiece(int startRow, int startCol, int endRow, int endCol, int player) {
-        return movePiece(startRow, startCol, endRow, endCol, player, false) ;
+        return movePiece(startRow, startCol, endRow, endCol, player, false);
     }
 
     /**
      * Metodo sobrecarregado para validar apenas pulos.
+     *
      * @param jumpOnly Se verdadeiro, apenas movimentos de pulo são permitidos.
      * @return Retorna se é válido o movimento da peça e altera a posição da peça.
      */
@@ -187,6 +167,7 @@ public class Board {
 
     /**
      * Responsável por verificar se, após uma jogada, o movimento realizado levou a uma vitória
+     *
      * @param player Id do player
      * @return Se um jogador foi dado com ganhador depois de uma jogada
      */
