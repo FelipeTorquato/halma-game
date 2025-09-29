@@ -12,52 +12,28 @@ public class Board {
         setupPieces();
     }
 
-//    private void setupPieces() {
-//        // Player 1 (Peças pretas no canto superior esquerdo do tabuleiro)
-//        grid[0][0] = new Piece(1);
-//        grid[0][1] = new Piece(1);
-//        grid[0][2] = new Piece(1);
-//        grid[1][0] = new Piece(1);
-//        grid[1][1] = new Piece(1);
-//        grid[1][2] = new Piece(1);
-//        grid[2][0] = new Piece(1);
-//        grid[2][1] = new Piece(1);
-//        grid[3][0] = new Piece(1);
-//
-//        // Player 2 (Peças brancas no canto inferior direito do tabuleiro)
-//        grid[SIZE - 1][SIZE - 1] = new Piece(2);
-//        grid[SIZE - 1][SIZE - 2] = new Piece(2);
-//        grid[SIZE - 1][SIZE - 3] = new Piece(2);
-//        grid[SIZE - 2][SIZE - 1] = new Piece(2);
-//        grid[SIZE - 2][SIZE - 2] = new Piece(2);
-//        grid[SIZE - 2][SIZE - 3] = new Piece(2);
-//        grid[SIZE - 3][SIZE - 1] = new Piece(2);
-//        grid[SIZE - 3][SIZE - 2] = new Piece(2);
-//        grid[SIZE - 4][SIZE - 1] = new Piece(2);
-//    }
-
     private void setupPieces() {
         // Player 1 (Peças pretas no canto superior esquerdo do tabuleiro)
-        grid[0][0] = new Piece(2);
-        grid[0][1] = new Piece(2);
-        grid[0][2] = new Piece(2);
-        grid[1][0] = new Piece(2);
-        grid[1][1] = new Piece(2);
-        grid[1][2] = new Piece(2);
-        grid[2][0] = new Piece(2);
-        grid[3][2] = new Piece(2);
-        grid[5][4] = new Piece(2);
+        grid[0][0] = new Piece(1);
+        grid[0][1] = new Piece(1);
+        grid[0][2] = new Piece(1);
+        grid[1][0] = new Piece(1);
+        grid[1][1] = new Piece(1);
+        grid[1][2] = new Piece(1);
+        grid[2][0] = new Piece(1);
+        grid[2][1] = new Piece(1);
+        grid[3][0] = new Piece(1);
 
         // Player 2 (Peças brancas no canto inferior direito do tabuleiro)
-        grid[SIZE - 1][SIZE - 1] = new Piece(1);
-        grid[SIZE - 1][SIZE - 2] = new Piece(1);
-        grid[SIZE - 1][SIZE - 3] = new Piece(1);
-        grid[SIZE - 2][SIZE - 1] = new Piece(1);
-        grid[SIZE - 2][SIZE - 2] = new Piece(1);
-        grid[2][1] = new Piece(1);
-        grid[SIZE - 3][SIZE - 1] = new Piece(1);
-        grid[SIZE - 3][SIZE - 2] = new Piece(1);
-        grid[SIZE - 5][SIZE - 1] = new Piece(1);
+        grid[SIZE - 1][SIZE - 1] = new Piece(2);
+        grid[SIZE - 1][SIZE - 2] = new Piece(2);
+        grid[SIZE - 1][SIZE - 3] = new Piece(2);
+        grid[SIZE - 2][SIZE - 1] = new Piece(2);
+        grid[SIZE - 2][SIZE - 2] = new Piece(2);
+        grid[SIZE - 2][SIZE - 3] = new Piece(2);
+        grid[SIZE - 3][SIZE - 1] = new Piece(2);
+        grid[SIZE - 3][SIZE - 2] = new Piece(2);
+        grid[SIZE - 4][SIZE - 1] = new Piece(2);
     }
 
     /**
