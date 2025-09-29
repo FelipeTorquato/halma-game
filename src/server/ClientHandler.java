@@ -14,6 +14,8 @@ public class ClientHandler extends Thread {
     private BufferedReader in;
     private GameSession gameSession;
 
+    private static final int CHAT_PORT = 12346;
+
     public ClientHandler(Socket socket) {
         this.clientSocket = socket;
     }
@@ -24,18 +26,26 @@ public class ClientHandler extends Thread {
 
     @Override
     public void run() {
+        boolean isChatHandler = clientSocket.getLocalPort() == CHAT_PORT;
+
         try {
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             if (gameSession == null) {
-                sendMessage(Protocol.INFO + Protocol.SEPARATOR + "Aguardando oponente...");
+                if (!isChatHandler) {
+                    sendMessage(Protocol.INFO + Protocol.SEPARATOR + "Aguardando oponente...");
+                }
             }
 
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 if (gameSession != null) {
-                    gameSession.processMessage(inputLine, this);
+                    if (isChatHandler) {
+                        gameSession.processChatMessage(inputLine, this);
+                    } else {
+                        gameSession.processGameMessage(inputLine, this);
+                    }
                 }
             }
         } catch (IOException e) {

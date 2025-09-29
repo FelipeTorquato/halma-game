@@ -10,9 +10,14 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class HalmaClient {
-    private Socket socket;
-    private PrintWriter out;
-    private BufferedReader in;
+    private Socket gameSocket;
+    private PrintWriter gameOut;
+    private BufferedReader gameIn;
+
+    private Socket chatSocket;
+    private PrintWriter chatOut;
+    private BufferedReader chatIn;
+
     private final GameFrame gameFrame;
     private String lastGameStats;
 
@@ -23,7 +28,7 @@ public class HalmaClient {
         String serverAddress = JOptionPane.showInputDialog(gameFrame, "Entre com o endereço IP:", "localhost");
 
         if (serverAddress != null && !serverAddress.trim().isEmpty()) {
-            connect(serverAddress, 12345);
+            connect(serverAddress, 12345, 12346);
         } else {
             System.exit(0);
         }
@@ -31,42 +36,54 @@ public class HalmaClient {
 
     public void shutdown() {
         try {
-            if (socket != null && !socket.isClosed()) {
-                socket.close();
+            if (gameSocket != null) {
+                gameSocket.close();
+            }
+            if (chatSocket != null) {
+                chatSocket.close();
             }
         } catch (IOException e) {
             System.err.println("Erro durante fechamento do socket cliente: " + e.getMessage());
         }
     }
 
-    public void connect(String serverAddress, int port) {
+    public void connect(String serverAddress, int gamePort, int chatPort) {
         try {
-            socket = new Socket(serverAddress, port);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            new Thread(new ServerListener()).start();
+            gameSocket = new Socket(serverAddress, gamePort);
+            gameOut = new PrintWriter(gameSocket.getOutputStream(), true);
+            gameIn = new BufferedReader(new InputStreamReader(gameSocket.getInputStream()));
+
+            chatSocket = new Socket(serverAddress, chatPort);
+            chatOut = new PrintWriter(chatSocket.getOutputStream(), true);
+            chatIn = new BufferedReader(new InputStreamReader(chatSocket.getInputStream()));
+
+
+            new Thread(new ServerListener(gameIn, true)).start();
+            new Thread(new ServerListener(chatIn, false)).start();
+
             gameFrame.updateStatus("Conectado. Aguardando por um oponente...");
         } catch (IOException e) {
             JOptionPane.showMessageDialog(gameFrame, "Não foi possível se conectar ao servidor.", "Erro de conexão", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+            System.exit(1);
         }
     }
 
     public void sendMove(int startRow, int startCol, int endRow, int endCol) {
         String message = Protocol.MOVE + Protocol.SEPARATOR + startRow + Protocol.SEPARATOR + startCol + Protocol.SEPARATOR + endRow + Protocol.SEPARATOR + endCol;
-        out.println(message);
+        gameOut.println(message);
     }
 
     public void sendChatMessage(String message) {
-        out.println(Protocol.CHAT + Protocol.SEPARATOR + message);
+        chatOut.println(Protocol.CHAT + Protocol.SEPARATOR + message);
     }
 
     public void sendForfeit() {
-        out.println(Protocol.FORFEIT);
+        gameOut.println(Protocol.FORFEIT);
     }
 
     public void sendEndChainJump() {
-        out.println(Protocol.END_CHAIN_JUMP);
+        gameOut.println(Protocol.END_CHAIN_JUMP);
     }
 
     /**
@@ -74,6 +91,14 @@ public class HalmaClient {
      * Previne da interface congelar enquanto aguarda dados de entrada e saída da rede.
      */
     private class ServerListener implements Runnable {
+        private final BufferedReader in;
+        private final boolean isGameListener;
+
+        public ServerListener(BufferedReader in, boolean isGameListener) {
+            this.in = in;
+            this.isGameListener = isGameListener;
+        }
+
         @Override
         public void run() {
             try {
@@ -82,8 +107,10 @@ public class HalmaClient {
                     processServerMessage(serverMessage);
                 }
             } catch (IOException e) {
-                gameFrame.updateStatus("Conexão com o servidor perdida.");
-                System.err.println("Erro ao ler do servidor: " + e.getMessage());
+                if (!gameSocket.isClosed()) {
+                    gameFrame.updateStatus("Conexão com o servidor perdida.");
+                    System.err.println("Erro ao ler do servidor: " + e.getMessage());
+                }
             }
         }
 
@@ -91,7 +118,13 @@ public class HalmaClient {
             String[] parts = message.split(Protocol.SEPARATOR, 2);
             String command = parts[0];
 
-            //
+            if (!isGameListener) {
+                if (command.equals(Protocol.CHAT_MESSAGE)) {
+                    SwingUtilities.invokeLater(() -> gameFrame.addChatMessage(parts[1]));
+                }
+                return;
+            }
+
             SwingUtilities.invokeLater(() -> {
                 switch (command) {
                     case Protocol.GAME_OVER_STATS:
@@ -127,9 +160,6 @@ public class HalmaClient {
                         int jumpEndRow = Integer.parseInt(jumpCoords[2]);
                         int jumpEndCol = Integer.parseInt(jumpCoords[3]);
                         gameFrame.updateBoardAndKeepSelection(jumpStartRow, jumpStartCol, jumpEndRow, jumpEndCol);
-                        break;
-                    case Protocol.CHAT_MESSAGE:
-                        gameFrame.addChatMessage(parts[1]);
                         break;
                     case Protocol.CHAIN_JUMP_OFFER:
                         String[] newCoords = parts[1].split(Protocol.SEPARATOR);

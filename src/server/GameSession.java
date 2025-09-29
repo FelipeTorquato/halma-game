@@ -8,15 +8,17 @@ import java.util.List;
 import java.util.StringJoiner;
 
 public class GameSession implements Runnable {
-    private final ClientHandler player1;
-    private final ClientHandler player2;
+    private final ClientHandler player1Game;
+    private final ClientHandler player2Game;
+    private final ClientHandler player1Chat;
+    private final ClientHandler player2Chat;
     private final Board board;
     private int currentPlayer;
 
-    private int player1MoveCount = 0;
-    private int player2MoveCount = 0;
-    private int player1InvalidAttempts = 0;
-    private int player2InvalidAttempts = 0;
+    private int player1GameMoveCount = 0;
+    private int player2GameMoveCount = 0;
+    private int player1GameInvalidAttempts = 0;
+    private int player2GameInvalidAttempts = 0;
     private final List<String> chatHistory = new ArrayList<>();
     private String winnerInfo = "O jogo encerrou inesperadamente.";
     private boolean gameEnded = false;
@@ -25,28 +27,32 @@ public class GameSession implements Runnable {
     private int chainJumpRow;
     private int chainJumpCol;
 
-    public GameSession(ClientHandler player1, ClientHandler player2) {
-        this.player1 = player1;
-        this.player2 = player2;
+    public GameSession(ClientHandler player1Game, ClientHandler player2Game, ClientHandler player1Chat, ClientHandler player2Chat) {
+        this.player1Game = player1Game;
+        this.player1Chat = player1Chat;
+        this.player2Game = player2Game;
+        this.player2Chat = player2Chat;
         this.board = new Board();
         this.currentPlayer = 1; // Jogador 1 inicia o jogo
 
         // Linka essa sessão de jogo para os jogadores
-        this.player1.setGameSession(this);
-        this.player2.setGameSession(this);
+        this.player1Game.setGameSession(this);
+        this.player1Chat.setGameSession(this);
+        this.player2Game.setGameSession(this);
+        this.player2Chat.setGameSession(this);
     }
 
     @Override
     public void run() {
         // Notificando jogadores que o jogo esta iniciando
-        player1.sendMessage(Protocol.WELCOME + Protocol.SEPARATOR + "1");
-        player2.sendMessage(Protocol.WELCOME + Protocol.SEPARATOR + "2");
+        player1Game.sendMessage(Protocol.WELCOME + Protocol.SEPARATOR + "1");
+        player2Game.sendMessage(Protocol.WELCOME + Protocol.SEPARATOR + "2");
 
-        player1.sendMessage(Protocol.OPPONENT_FOUND);
-        player2.sendMessage(Protocol.OPPONENT_FOUND);
+        player1Game.sendMessage(Protocol.OPPONENT_FOUND);
+        player2Game.sendMessage(Protocol.OPPONENT_FOUND);
 
-        player1.sendMessage(Protocol.GAME_START);
-        player2.sendMessage(Protocol.GAME_START);
+        player1Game.sendMessage(Protocol.GAME_START);
+        player2Game.sendMessage(Protocol.GAME_START);
 
         // Inicia turno
         updateTurn();
@@ -54,11 +60,11 @@ public class GameSession implements Runnable {
 
     private void updateTurn() {
         if (currentPlayer == 1) {
-            player1.sendMessage(Protocol.SET_TURN + Protocol.SEPARATOR + "YOUR_TURN");
-            player2.sendMessage(Protocol.SET_TURN + Protocol.SEPARATOR + "OPPONENT_TURN");
+            player1Game.sendMessage(Protocol.SET_TURN + Protocol.SEPARATOR + "YOUR_TURN");
+            player2Game.sendMessage(Protocol.SET_TURN + Protocol.SEPARATOR + "OPPONENT_TURN");
         } else {
-            player2.sendMessage(Protocol.SET_TURN + Protocol.SEPARATOR + "YOUR_TURN");
-            player1.sendMessage(Protocol.SET_TURN + Protocol.SEPARATOR + "OPPONENT_TURN");
+            player2Game.sendMessage(Protocol.SET_TURN + Protocol.SEPARATOR + "YOUR_TURN");
+            player1Game.sendMessage(Protocol.SET_TURN + Protocol.SEPARATOR + "OPPONENT_TURN");
         }
     }
 
@@ -68,10 +74,11 @@ public class GameSession implements Runnable {
         updateTurn();
     }
 
-    public synchronized void processMessage(String message, ClientHandler sender) {
+    public synchronized void processGameMessage(String message, ClientHandler sender) {
+        if (gameEnded) return;
         String[] parts = message.split(Protocol.SEPARATOR, 2);
         String command = parts[0];
-        int senderId = (sender == player1) ? 1 : 2;
+        int senderId = (sender == player1Game) ? 1 : 2;
 
         switch (command) {
             case Protocol.MOVE:
@@ -79,12 +86,9 @@ public class GameSession implements Runnable {
                     handleMove(parts[1], sender);
                 } else {
                     sender.sendMessage(Protocol.ERROR + Protocol.SEPARATOR + "Não é o seu turno.");
-                    if (senderId == 1) player1InvalidAttempts++;
-                    else player2InvalidAttempts++;
+                    if (senderId == 1) player1GameInvalidAttempts++;
+                    else player2GameInvalidAttempts++;
                 }
-                break;
-            case Protocol.CHAT:
-                broadcastChat(parts[1], senderId);
                 break;
             case Protocol.FORFEIT:
                 handleForfeit(sender);
@@ -98,14 +102,27 @@ public class GameSession implements Runnable {
         }
     }
 
+    // Metodo para processar apenas mensagens de chat
+    public synchronized void processChatMessage(String message, ClientHandler sender) {
+        if (gameEnded) return;
+
+        String[] parts = message.split(Protocol.SEPARATOR, 2);
+        int senderId = (sender == player1Chat) ? 1 : 2;
+
+        if (Protocol.CHAT.equals(parts[0])) {
+            broadcastChat(parts[1], senderId);
+        }
+    }
+
+
     private void handleMove(String moveData, ClientHandler sender) {
+//        ClientHandler opponent = (sender == player1Game) ? player2Game : player1Game;
+
         try {
             String[] coords = moveData.split(Protocol.SEPARATOR);
-            int startRow = Integer.parseInt(coords[0]);
-            int startCol = Integer.parseInt(coords[1]);
-            int endRow = Integer.parseInt(coords[2]);
-            int endCol = Integer.parseInt(coords[3]);
-            int senderId = (sender == player1) ? 1 : 2;
+            int startRow = Integer.parseInt(coords[0]), startCol = Integer.parseInt(coords[1]);
+            int endRow = Integer.parseInt(coords[2]), endCol = Integer.parseInt(coords[3]);
+            int senderId = (sender == player1Game) ? 1 : 2;
 
             if (isChainJumpActive) {
                 if (startRow != chainJumpRow || startCol != chainJumpCol) {
@@ -115,15 +132,15 @@ public class GameSession implements Runnable {
             }
 
             if (board.movePiece(startRow, startCol, endRow, endCol, currentPlayer, isChainJumpActive)) {
-                if (senderId == 1) player1MoveCount++;
-                else player2MoveCount++;
+                if (senderId == 1) player1GameMoveCount++;
+                else player2GameMoveCount++;
 //                String moveMessage = Protocol.VALID_MOVE + Protocol.SEPARATOR + moveData;
 
+                ClientHandler opponent = (sender == player1Game) ? player2Game : player1Game;
                 boolean wasJump = Math.abs(startRow - endRow) > 1 || Math.abs(startCol - endCol) > 1;
 
 //                sender.sendMessage(moveMessage);
 
-                ClientHandler opponent = (sender == player1) ? player2 : player1;
 //                opponent.sendMessage(Protocol.OPPONENT_MOVED + Protocol.SEPARATOR + moveData);
 
                 if (wasJump && board.canJumpFrom(endRow, endCol)) {
@@ -146,25 +163,15 @@ public class GameSession implements Runnable {
                     opponent.sendMessage(Protocol.OPPONENT_MOVED + Protocol.SEPARATOR + moveData);
 
                     if (board.checkForWinner(currentPlayer)) {
-                        if (gameEnded) return;
-                        gameEnded = true;
-
-                        opponent = (sender == player1) ? player2 : player1;
                         winnerInfo = "Jogador " + currentPlayer + " ganhou por chegar no destino!";
-                        sendGameOverStats();
-                        sender.sendMessage(Protocol.VICTORY);
-                        opponent.sendMessage(Protocol.DEFEAT);
-
-                        sender.shutdown();
-                        opponent.shutdown();
+                        endGame(sender, opponent, Protocol.VICTORY, Protocol.DEFEAT);
                     } else {
                         switchTurn();
                     }
-
                 }
             } else {
-                if (senderId == 1) player1InvalidAttempts++;
-                else player2InvalidAttempts++;
+                if (senderId == 1) player1GameInvalidAttempts++;
+                else player2GameInvalidAttempts++;
                 sender.sendMessage(Protocol.ERROR + Protocol.SEPARATOR + "Movimento inválido.");
             }
         } catch (Exception e) {
@@ -174,41 +181,50 @@ public class GameSession implements Runnable {
 
     private void broadcastChat(String chatMessage, int senderId) {
         String formattedMessage = Protocol.CHAT_MESSAGE + Protocol.SEPARATOR + "Jogador " + senderId + ": " + chatMessage;
-        player1.sendMessage(formattedMessage);
-        player2.sendMessage(formattedMessage);
+        player1Chat.sendMessage(formattedMessage);
+        player2Chat.sendMessage(formattedMessage);
         String newFormattedMessage = "Jogador " + senderId + ": " + chatMessage;
         chatHistory.add(newFormattedMessage);
     }
 
-    private void handleForfeit(ClientHandler forfeiter) {
-        if (gameEnded) return;
-        gameEnded = true;
-
-        ClientHandler winner = (forfeiter == player1) ? player2 : player1;
-        int winnerId = (winner == player1) ? 1 : 2;
+    private void handleForfeit(ClientHandler forfeiterGame) {
+        ClientHandler winnerGame = (forfeiterGame == player1Game) ? player2Game : player1Game;
+        int winnerId = (winnerGame == player1Game) ? 1 : 2;
         winnerInfo = "Jogador " + winnerId + " ganhou pela desistência do oponente.";
-        sendGameOverStats();
-
-        winner.sendMessage(Protocol.OPPONENT_FORFEIT);
-        forfeiter.sendMessage(Protocol.DEFEAT + Protocol.SEPARATOR + "Vou desistiu da partida.");
-
-        winner.shutdown();
-        forfeiter.shutdown();
+        endGame(winnerGame, forfeiterGame, Protocol.OPPONENT_FORFEIT, Protocol.DEFEAT + Protocol.SEPARATOR + "Você desistiu da partida.");
     }
 
-    public synchronized void handleDisconnect(ClientHandler disconnectedPlayer) {
+    private void shutdownAllConnections() {
+        player1Game.shutdown();
+        player2Game.shutdown();
+        player1Chat.shutdown();
+        player2Chat.shutdown();
+    }
+
+    public synchronized void handleDisconnect(ClientHandler disconnectedHandler) {
         if (gameEnded) return;
         gameEnded = true;
 
-        ClientHandler winner = (disconnectedPlayer == player1) ? player2 : player1;
-        int winnerId = (winner == player1) ? 1 : 2;
+        ClientHandler winnerGame = (disconnectedHandler == player1Game || disconnectedHandler == player1Chat) ? player2Game : player1Game;
+        ClientHandler loserGame = (winnerGame == player1Game) ? player2Game : player1Game;
+        int winnerId = (winnerGame == player1Game) ? 1 : 2;
+
         winnerInfo = "Jogador " + winnerId + " ganhou porque o oponente se desconectou.";
+        endGame(winnerGame, loserGame, Protocol.OPPONENT_FORFEIT, ""); // Loser is already disconnected
+    }
+
+    private void endGame(ClientHandler winner, ClientHandler loser, String winMessage, String loseMessage) {
+        if (gameEnded) return;
+        gameEnded = true;
+
         sendGameOverStats();
 
-        winner.sendMessage(Protocol.OPPONENT_FORFEIT);
+        winner.sendMessage(winMessage);
+        if (!loseMessage.isEmpty()) {
+            loser.sendMessage(loseMessage);
+        }
 
-        winner.shutdown();
-        disconnectedPlayer.shutdown();
+        shutdownAllConnections();
     }
 
     private void sendGameOverStats() {
@@ -216,14 +232,14 @@ public class GameSession implements Runnable {
 
         StringJoiner stats = new StringJoiner(Protocol.SEPARATOR);
         stats.add(winnerInfo);
-        stats.add(String.valueOf(player1MoveCount));
-        stats.add(String.valueOf(player1InvalidAttempts));
-        stats.add(String.valueOf(player2MoveCount));
-        stats.add(String.valueOf(player2InvalidAttempts));
+        stats.add(String.valueOf(player1GameMoveCount));
+        stats.add(String.valueOf(player1GameInvalidAttempts));
+        stats.add(String.valueOf(player2GameMoveCount));
+        stats.add(String.valueOf(player2GameInvalidAttempts));
         stats.add(chatLog);
 
         String message = Protocol.GAME_OVER_STATS + Protocol.SEPARATOR + stats.toString();
-        player1.sendMessage(message);
-        player2.sendMessage(message);
+        player1Game.sendMessage(message);
+        player2Game.sendMessage(message);
     }
 }
