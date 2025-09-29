@@ -96,7 +96,13 @@ public class GameSession implements Runnable {
             case Protocol.END_CHAIN_JUMP:
                 if (isChainJumpActive && senderId == currentPlayer) {
                     isChainJumpActive = false;
-                    switchTurn();
+                    ClientHandler opponent = (sender == player1Game) ? player2Game : player1Game;
+                    if (board.checkForWinner(currentPlayer)) {
+                        winnerInfo = "Jogador " + currentPlayer + " ganhou por chegar no destino!";
+                        endGame(sender, opponent, Protocol.VICTORY, Protocol.DEFEAT);
+                    } else {
+                        switchTurn();
+                    }
                 }
                 break;
         }
@@ -116,8 +122,6 @@ public class GameSession implements Runnable {
 
 
     private void handleMove(String moveData, ClientHandler sender) {
-//        ClientHandler opponent = (sender == player1Game) ? player2Game : player1Game;
-
         try {
             String[] coords = moveData.split(Protocol.SEPARATOR);
             int startRow = Integer.parseInt(coords[0]), startCol = Integer.parseInt(coords[1]);
