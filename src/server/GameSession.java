@@ -157,12 +157,8 @@ public class GameSession implements Runnable {
 
                         opponent = (sender == player1) ? player2 : player1;
                         winnerInfo = "Jogador " + currentPlayer + " ganhou por chegar no destino!";
-                        sendGameOverStats();
-                        sender.sendMessage(Protocol.VICTORY);
-                        opponent.sendMessage(Protocol.DEFEAT);
 
-                        sender.shutdown();
-                        opponent.shutdown();
+                        endGame(sender, opponent, Protocol.VICTORY, Protocol.DEFEAT);
                     } else {
                         switchTurn();
                     }
@@ -193,13 +189,8 @@ public class GameSession implements Runnable {
         ClientHandler winner = (forfeiter == player1) ? player2 : player1;
         int winnerId = (winner == player1) ? 1 : 2;
         winnerInfo = "Jogador " + winnerId + " ganhou pela desistência do oponente.";
-        sendGameOverStats();
 
-        winner.sendMessage(Protocol.OPPONENT_FORFEIT);
-        forfeiter.sendMessage(Protocol.DEFEAT + Protocol.SEPARATOR + "Vou desistiu da partida.");
-
-        winner.shutdown();
-        forfeiter.shutdown();
+        endGame(winner, forfeiter, Protocol.OPPONENT_FORFEIT, Protocol.DEFEAT + Protocol.SEPARATOR + "Você desistiu da partida.");
     }
 
     public synchronized void handleDisconnect(ClientHandler disconnectedPlayer) {
